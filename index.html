@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mrs Rennie Counter</title>
   <style>
     body {
@@ -12,9 +12,19 @@
       color: #333;
       padding: 2em;
     }
-    h1 { font-size: 2em; margin-bottom: 0.5em; }
-    #counter { font-size: 5em; font-weight: bold; margin: 0.5em 0; }
-    #status { font-size: 1.3em; margin-top: 1em; }
+    h1 {
+      font-size: 2em;
+      margin-bottom: 0.5em;
+    }
+    #counter {
+      font-size: 5em;
+      font-weight: bold;
+      margin: 0.5em 0;
+    }
+    #status {
+      font-size: 1.3em;
+      margin-top: 1em;
+    }
     .dots::after {
       content: "";
       animation: dots 1.2s steps(3, end) infinite;
@@ -36,8 +46,7 @@
   <script src="https://cdn.jsdelivr.net/npm/vosk-browser/dist/vosk.js"></script>
 
   <script>
-    const MODEL_URL = "./model/";
-
+    const MODEL_URL = "./model/"; // local folder
     const statusEl = document.getElementById("status");
     const counterEl = document.getElementById("counter");
     let count = 0;
@@ -45,14 +54,11 @@
     async function main() {
       try {
         statusEl.textContent = "Loading model";
-
-        // Load model via global Vosk object
         const model = await Vosk.createModel(MODEL_URL);
         statusEl.textContent = "Model loaded! Listening...";
 
         const recognizer = new model.Recognizer({ sampleRate: 48000 });
 
-        // Get microphone input
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         const audioCtx = new AudioContext();
         const source = audioCtx.createMediaStreamSource(stream);
@@ -64,13 +70,16 @@
           const inputData = e.inputBuffer.getChannelData(0);
           recognizer.acceptWaveform(inputData);
           const result = recognizer.result();
-          if (result && result.text && result.text.toLowerCase().includes("mrs rennie")) {
-            count++;
-            counterEl.textContent = count;
+          if (result && result.text) {
+            const text = result.text.toLowerCase();
+            if (text.includes("mrs rennie")) {
+              count++;
+              counterEl.textContent = count;
+            }
           }
         };
 
-        // Stop microphone if user leaves page
+        // Keep listening indefinitely
         window.addEventListener("beforeunload", () => {
           stream.getTracks().forEach(track => track.stop());
         });
