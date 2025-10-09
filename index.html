@@ -43,7 +43,7 @@
   <div id="status" class="dots">Loading model</div>
 
   <script type="module">
-    import * as Vosk from "https://cdn.jsdelivr.net/npm/vosk-browser/dist/vosk.js";
+    import { Model, Recognizer } from "https://cdn.jsdelivr.net/npm/vosk-browser@latest/dist/vosk.js";
 
     const MODEL_URL = "https://cdn.jsdelivr.net/gh/bobchomp/mrsrennie-model@main/vosk-model-small-en-us-0.15/";
 
@@ -55,14 +55,15 @@
       try {
         statusEl.textContent = "Loading model";
 
-        // create the model from jsDelivr-hosted GitHub repo
-        const model = await Vosk.createModel(MODEL_URL);
+        // load model
+        const model = new Model(MODEL_URL);
+        await model.init();
         statusEl.textContent = "Model loaded! Listening...";
 
-        // create recognizer
-        const recognizer = new model.Recognizer({ sampleRate: 48000 });
+        // recognizer
+        const recognizer = new Recognizer({ model, sampleRate: 48000 });
 
-        // get microphone input
+        // microphone setup
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         const audioCtx = new AudioContext();
         const source = audioCtx.createMediaStreamSource(stream);
@@ -74,6 +75,7 @@
           const inputData = e.inputBuffer.getChannelData(0);
           recognizer.acceptWaveform(inputData);
           const result = recognizer.result();
+
           if (result && result.text) {
             const text = result.text.toLowerCase();
             if (text.includes("mrs rennie")) {
@@ -83,7 +85,7 @@
           }
         };
 
-        // Keep listening indefinitely
+        // keep listening indefinitely
         window.addEventListener("beforeunload", () => {
           stream.getTracks().forEach(track => track.stop());
         });
