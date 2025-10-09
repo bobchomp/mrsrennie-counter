@@ -42,11 +42,11 @@
   <div id="counter">0</div>
   <div id="status" class="dots">Loading model</div>
 
-  <!-- Vosk global script -->
-  <script src="https://cdn.jsdelivr.net/npm/vosk-browser/dist/vosk.js"></script>
+  <script type="module">
+    import * as Vosk from "https://cdn.jsdelivr.net/npm/vosk-browser/dist/vosk.js";
 
-  <script>
-    const MODEL_URL = "./model/"; // local folder
+    const MODEL_URL = "https://cdn.jsdelivr.net/gh/bobchomp/mrsrennie-model@main/vosk-model-small-en-us-0.15/";
+
     const statusEl = document.getElementById("status");
     const counterEl = document.getElementById("counter");
     let count = 0;
@@ -54,11 +54,15 @@
     async function main() {
       try {
         statusEl.textContent = "Loading model";
+
+        // create the model from jsDelivr-hosted GitHub repo
         const model = await Vosk.createModel(MODEL_URL);
         statusEl.textContent = "Model loaded! Listening...";
 
+        // create recognizer
         const recognizer = new model.Recognizer({ sampleRate: 48000 });
 
+        // get microphone input
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         const audioCtx = new AudioContext();
         const source = audioCtx.createMediaStreamSource(stream);
